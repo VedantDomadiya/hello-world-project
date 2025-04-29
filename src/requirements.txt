@@ -1,0 +1,3 @@
+Flask==2.3.3  # Or latest stable version
+boto3==1.34.95 # Or latest stable version
+psycopg2-binary==2.9.9 # Or latest stable version (use psycopg2 if you can build C extensions)

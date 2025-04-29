@@ -6,34 +6,38 @@ on:
 
 env:
   AWS_REGION: ap-south-1
+  # Use the ECR repository name defined in Terraform (or keep hardcoded if it matches)
+  ECR_REPOSITORY: hello-world-app # Adjust if var.project_name is different
+  ECS_CLUSTER_NAME: hello-world-cluster # Adjust if var.project_name is different
+  ECS_SERVICE_NAME: hello-world-service # Adjust if var.project_name is different
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v2
-    
+    - uses: actions/checkout@v3 # Use v3 or later
+
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v1 # Consider updating to v2 or later
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ env.AWS_REGION }}
-    
+
     - name: Login to Amazon ECR
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-    
+      uses: aws-actions/amazon-ecr-login@v1 # Consider updating to v2 or later
+
     - name: Build and push Docker image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: hello-world-app
-        IMAGE_TAG: latest
+        IMAGE_TAG: latest # Or use ${{ github.sha }} for unique tags
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-    
+
     - name: Force new deployment
       run: |
-        aws ecs update-service --cluster hello-world-cluster --service hello-world-service --force-new-deployment
+        aws ecs update-service --cluster ${{ env.ECS_CLUSTER_NAME }} --service ${{ env.ECS_SERVICE_NAME }} --force-new-deployment --task-definition ${{ env.ECS_CLUSTER_NAME }}-task # Reference family name convention
+        # Add a wait command if needed: aws ecs wait services-stable --cluster ... --services ...
