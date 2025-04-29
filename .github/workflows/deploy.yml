@@ -10,6 +10,7 @@ env:
   ECR_REPOSITORY: hello-world-app # Adjust if var.project_name is different
   ECS_CLUSTER_NAME: hello-world-cluster # Adjust if var.project_name is different
   ECS_SERVICE_NAME: hello-world-service # Adjust if var.project_name is different
+  TASK_DEFINITION_FAMILY: hello-world-task
 
 jobs:
   deploy:
@@ -39,5 +40,8 @@ jobs:
 
     - name: Force new deployment
       run: |
-        aws ecs update-service --cluster ${{ env.ECS_CLUSTER_NAME }} --service ${{ env.ECS_SERVICE_NAME }} --force-new-deployment --task-definition ${{ env.ECS_CLUSTER_NAME }}-task # Reference family name convention
-        # Add a wait command if needed: aws ecs wait services-stable --cluster ... --services ...
+        aws ecs update-service \
+        --cluster ${{ env.ECS_CLUSTER_NAME }} \
+        --service ${{ env.ECS_SERVICE_NAME }} \
+        --force-new-deployment \
+        --task-definition ${{ env.TASK_DEFINITION_FAMILY }}
