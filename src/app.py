@@ -44,8 +44,8 @@ def get_db_credentials():
 def hello():
     return "<h1>Hello World from ECS (with DB check)!</h1><p>Visit /db-check to verify database connection.</p>"
 
-@app.route('/db-check')
-def db_check():
+# @app.route('/db-check')
+# def db_check():
     """Attempts to connect to the database and returns status."""
     credentials = None
     connection = None
@@ -94,6 +94,52 @@ def db_check():
             connection.close()
             print("Database connection closed.")
 
+
+@app.route('/db-check')
+def db_check():
+    """Attempts to connect to the database and returns status."""
+    # Hardcoded RDS details
+    db_config = {
+        "host": "hello-world-dev-db.c1m2muqyuj90.ap-south-1.rds.amazonaws.com",
+        "port": 5432,
+        "dbname": "webappdb",
+        "user": "dbadmin",
+        "password": "fuFU4CYah4edCmL7"
+    }
+
+    connection = None
+    try:
+        print("Attempting to connect to database...")
+        connection = psycopg2.connect(
+            host=db_config["host"],
+            port=db_config["port"],
+            dbname=db_config["dbname"],
+            user=db_config["user"],
+            password=db_config["password"],
+            connect_timeout=5  # Add a timeout
+        )
+        # If connection is successful
+        print("Database connection successful!")
+        cursor = connection.cursor()
+        cursor.execute("SELECT version();")
+        db_version = cursor.fetchone()
+        cursor.close()
+        return jsonify({
+            "status": "SUCCESS",
+            "message": "Successfully connected to the database.",
+            "db_version": db_version[0] if db_version else "N/A"
+        })
+    except psycopg2.OperationalError as e:
+        print(f"Database connection failed: {e}")
+        error_detail = f"Could not connect to DB '{db_config['dbname']}' on host '{db_config['host']}'."
+        return jsonify({"status": "ERROR", "message": f"Database connection failed. Details: {error_detail}"}), 503
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return jsonify({"status": "ERROR", "message": f"An unexpected error occurred: {e}"}), 500
+    finally:
+        if connection:
+            connection.close()
+            print("Database connection closed.")
 
 if __name__ == '__main__':
     # Run Flask on port 80 to match Task Definition and SG
