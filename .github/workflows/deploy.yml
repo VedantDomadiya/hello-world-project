@@ -2,7 +2,9 @@ name: Deploy to AWS ECS
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+      - main
+      - feature/terraform-modules # Add this line for the new branch
 
 env:
   AWS_REGION: ap-south-1
