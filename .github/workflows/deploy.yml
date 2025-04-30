@@ -7,6 +7,7 @@ on:
 env:
   AWS_REGION: ap-south-1
   # Use the ECR repository name defined in Terraform (or keep hardcoded if it matches)
+  # Verify these names against `terraform output` after applying changes
   ECR_REPOSITORY: hello-world-app # Adjust if var.project_name is different
   ECS_CLUSTER_NAME: hello-world-cluster # Adjust if var.project_name is different
   ECS_SERVICE_NAME: hello-world-service # Adjust if var.project_name is different
@@ -17,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3 # Use v3 or later
+    - uses: actions/checkout@v4 # Use v3 or later
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1 # Consider updating to v2 or later

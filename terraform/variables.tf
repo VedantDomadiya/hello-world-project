@@ -5,7 +5,7 @@ variable "aws_region" {
 }
 
 variable "project_name" {
-  description = "Project name to be used for tagging"
+  description = "Project name to be used for tagging and resource naming"
   type        = string
   default     = "hello-world"
 }
@@ -16,7 +16,14 @@ variable "environment" {
   default     = "dev"
 }
 
-# --- New RDS Variables ---
+# --- Network Module Variables ---
+variable "vpc_cidr_block" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+# --- RDS Module Variables ---
 variable "db_name" {
   description = "Database name"
   type        = string
@@ -27,13 +34,12 @@ variable "db_username" {
   description = "Database master username"
   type        = string
   default     = "dbadmin"
-  # Note: Avoid default passwords. We'll generate one.
 }
 
 variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
-  default     = "db.t3.micro" # Choose an appropriate instance type
+  default     = "db.t3.micro"
 }
 
 variable "db_allocated_storage" {
@@ -45,19 +51,34 @@ variable "db_allocated_storage" {
 variable "db_engine" {
   description = "Database engine"
   type        = string
-  default     = "postgres" # Or "mysql", etc.
+  default     = "postgres"
 }
 
 variable "db_engine_version" {
-    description = "Database engine version"
-    type        = string
-    default     = "17" # Use a relevant version for your engine
+  description = "Database engine version"
+  type        = string
+  # Updated default to a common PostgreSQL version. Adjust if using MySQL etc.
+  default     = "17" # Example: check available versions for db.t3.micro in ap-south-1
 }
 
 variable "db_port" {
   description = "Database port"
   type        = number
   default     = 5432 # Default for PostgreSQL
-  # default     = 3306 # Default for MySQL
 }
-# --- End New RDS Variables ---
+
+# --- ECS Module Variables ---
+# The ECR repository URL depends on the account and region,
+# so we construct it in main.tf using the ECR module output.
+# We'll add a variable for the image tag.
+variable "container_image_tag" {
+  description = "Tag of the Docker image to deploy"
+  type        = string
+  default     = "latest"
+}
+
+variable "container_port" {
+  description = "Port exposed by the container"
+  type        = number
+  default     = 80
+}
